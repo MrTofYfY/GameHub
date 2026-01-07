@@ -228,6 +228,319 @@
             <p class="text-gray-500">Игр пока нет. Загляните позже или попросите админа добавить новинки!</p>
         </div>
 
+        <!-- Edit Game Modal -->
+        <div id="edit-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+            <div class="glass-panel p-8 rounded-2xl max-w-2xl w-full mx-4 relative transform scale-95 transition-transform duration-300" id="edit-modal-content">
+                <button onclick="closeEditModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                
+                <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+                    <span class="text-blue-400">✏️</span> Редактирование игры
+                </h2>
+                
+                <form id="edit-game-form" class="space-y-4">
+                    <input type="hidden" id="edit-game-id">
+                    
+                    <div>
+                        <label class="block text-gray-400 text-xs uppercase font-bold mb-1">Название</label>
+                        <input type="text" id="edit-game-title" class="w-full bg-gray-800/50 border border-gray-600 rounded-lg p-2 text-white focus:border-blue-500 outline-none" required>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-gray-400 text-xs uppercase font-bold mb-1">Описание</label>
+                        <textarea id="edit-game-desc" rows="3" class="w-full bg-gray-800/50 border border-gray-600 rounded-lg p-2 text-white focus:border-blue-500 outline-none" required></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-400 text-xs uppercase font-bold mb-1">Изображение</label>
+                            <div class="flex items-center gap-3">
+                                <img id="edit-game-preview" class="w-12 h-12 object-cover rounded border border-gray-600">
+                                <input type="text" id="edit-game-img-url" class="flex-grow bg-gray-800/50 border border-gray-600 rounded-lg p-2 text-white text-sm outline-none focus:border-blue-500" placeholder="URL картинки">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-gray-400 text-xs uppercase font-bold mb-1">Файл игры</label>
+                            <div class="flex items-center gap-2 h-12 px-3 border border-gray-600 rounded-lg bg-gray-800/30">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span id="edit-game-filename" class="text-sm text-gray-300 truncate">installer.zip</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 mt-8 pt-4 border-t border-gray-700">
+                        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg hover:shadow-blue-500/30">
+                            Сохранить изменения
+                        </button>
+                        <button type="button" onclick="deleteGameFromEdit()" class="flex-none bg-red-600/20 hover:bg-red-600/80 text-red-400 hover:text-white border border-red-500/50 font-bold py-2 px-4 rounded-lg transition">
+                            Удалить игру
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="bg-gray-900/80 border-t border-purple-900/30 p-6 mt-auto">
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+            <div>&copy; 2023 NeonGameHub. Создано для геймеров.</div>
+            <div class="flex space-x-4 mt-4 md:mt-0 items-center">
+                <a href="#" class="hover:text-purple-400 transition">О нас</a>
+                <a href="#" class="hover:text-purple-400 transition">Правила</a>
+                <button onclick="hardReset()" class="text-xs text-red-900 hover:text-red-500 border border-red-900/30 px-2 py-1 rounded ml-4 transition" title="Нажмите если сайт зависает">Сброс данных</button>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // --- State Management ---
+        const DB_KEYS = {
+            USERS: 'neon_users_v2', // Updated version to force re-init if needed or just separate
+            CURRENT_USER: 'neon_curr_user_v2',
+            GAMES: 'neon_games_v2'
+        };
+
+        // Initialize DB with Error Handling
+        function initDB() {
+            try {
+                if (!localStorage.getItem(DB_KEYS.USERS)) {
+                    const adminUser = {
+                        id: 1,
+                        username: 'admin',
+                        password: '11448888', 
+                        isAdmin: true
+                    };
+                    localStorage.setItem(DB_KEYS.USERS, JSON.stringify([adminUser]));
+                }
+                if (!localStorage.getItem(DB_KEYS.GAMES)) {
+                    localStorage.setItem(DB_KEYS.GAMES, JSON.stringify([]));
+                }
+            } catch (e) {
+                console.error("Storage Error:", e);
+                alert("Ошибка хранилища! Данные сброшены во избежание зависания.");
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        initDB();
+
+        // Global State with Safe Parsing
+        let currentUser = null;
+        try {
+            currentUser = JSON.parse(localStorage.getItem(DB_KEYS.CURRENT_USER));
+        } catch (e) {
+            console.error("User Parse Error", e);
+            localStorage.removeItem(DB_KEYS.CURRENT_USER);
+        }
+        let isLoginMode = true;
+
+        // Emergency Reset
+        window.hardReset = function() {
+            if(confirm("Это удалит ВСЕ данные (игры и пользователей) и исправит зависания. Продолжить?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }            mask-image: radial-gradient(circle at 50% 50%, black 40%, transparent 80%);
+        }
+
+        @keyframes neon-pulse {
+            0%, 100% { text-shadow: 0 0 5px var(--neon-purple), 0 0 10px var(--neon-purple); }
+            50% { text-shadow: 0 0 2px var(--neon-purple), 0 0 5px var(--neon-purple), 0 0 15px var(--neon-purple); }
+        }
+        .neon-text {
+            animation: neon-pulse 3s infinite alternate;
+        }
+        
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .neon-border {
+            border: 1px solid var(--neon-purple);
+            box-shadow: 0 0 5px var(--neon-purple), inset 0 0 5px rgba(168, 85, 247, 0.2);
+        }
+        
+        .neon-button {
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .neon-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+        .neon-button:hover::before {
+            left: 100%;
+        }
+        .neon-button:hover {
+            box-shadow: 0 0 15px var(--neon-purple), 0 0 30px var(--neon-purple);
+            transform: translateY(-2px);
+            text-shadow: 0 0 5px white;
+        }
+
+        /* Card Hover Effect */
+        .game-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .game-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 30px -10px rgba(168, 85, 247, 0.5);
+            border-color: var(--neon-purple);
+        }
+
+        /* Scrollbar customization */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f0518; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #581c87; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7e22ce; 
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <div class="bg-grid"></div>
+
+    <!-- Navigation -->
+    <nav class="glass-panel sticky top-0 z-50 border-b-0 border-b-purple-500/30">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-purple-600 shadow-[0_0_10px_#a855f7] flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <div class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 neon-text tracking-wider">NeonGameHub</div>
+            </div>
+            <div id="nav-buttons" class="flex items-center space-x-4">
+                <!-- Dynamic Content -->
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto p-4 flex-grow relative pt-8">
+        
+        <!-- Notifications -->
+        <div id="notification-area" class="fixed top-24 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+        <!-- Auth Section -->
+        <div id="auth-section" class="max-w-md mx-auto mt-12 p-8 glass-panel rounded-2xl hidden animate-fade-in">
+            <h2 id="auth-title" class="text-3xl font-bold text-center text-purple-400 mb-8 neon-text">Вход в систему</h2>
+            <form id="auth-form" class="space-y-6">
+                <div class="relative group">
+                    <input type="text" id="username" class="w-full bg-gray-900/50 border border-purple-900/50 rounded-lg p-3 pl-4 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition peer" placeholder=" " required>
+                    <label class="absolute left-4 top-3 text-gray-500 transition-all peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-purple-400 peer-focus:bg-gray-900 peer-focus:px-1 pointer-events-none peer-not-placeholder-shown:-top-2.5 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:bg-gray-900 peer-not-placeholder-shown:px-1">Имя пользователя</label>
+                </div>
+                <div class="relative group">
+                    <input type="password" id="password" class="w-full bg-gray-900/50 border border-purple-900/50 rounded-lg p-3 pl-4 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition peer" placeholder=" " required>
+                    <label class="absolute left-4 top-3 text-gray-500 transition-all peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-purple-400 peer-focus:bg-gray-900 peer-focus:px-1 pointer-events-none peer-not-placeholder-shown:-top-2.5 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:bg-gray-900 peer-not-placeholder-shown:px-1">Пароль</label>
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-purple-700 to-purple-900 hover:from-purple-600 hover:to-purple-800 text-white font-bold py-3 px-4 rounded-lg neon-button uppercase tracking-wide">
+                    <span id="auth-btn-text">Войти</span>
+                </button>
+            </form>
+            <p class="text-center mt-6 text-gray-400 text-sm">
+                <span id="auth-switch-text">Нет аккаунта?</span> 
+                <button id="auth-toggle" class="text-purple-400 hover:text-purple-300 ml-1 font-semibold underline decoration-dotted underline-offset-4">Зарегистрироваться</button>
+            </p>
+        </div>
+
+        <!-- Admin Dashboard (Add Game) - Hidden by default, toggled via button -->
+        <div id="admin-panel" class="hidden mb-12 transform transition-all duration-300 origin-top">
+            <div class="glass-panel rounded-xl p-8 border border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.15)]">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
+                        <span class="text-purple-400">⚡</span> Добавить новую игру
+                    </h2>
+                    <button onclick="toggleAdminPanel()" class="text-gray-400 hover:text-white">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                
+                <form id="add-game-form" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-purple-300 text-sm font-semibold mb-2 uppercase tracking-wider">Название игры</label>
+                            <input type="text" id="game-title" class="w-full bg-gray-800/50 border border-purple-900 rounded-lg p-3 text-white focus:outline-none focus:border-purple-400 transition" placeholder="Cyberpunk 2077..." required>
+                        </div>
+                        <div>
+                            <label class="block text-purple-300 text-sm font-semibold mb-2 uppercase tracking-wider">Описание</label>
+                            <textarea id="game-desc" rows="5" class="w-full bg-gray-800/50 border border-purple-900 rounded-lg p-3 text-white focus:outline-none focus:border-purple-400 transition" placeholder="Краткое описание игры..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="space-y-6 flex flex-col justify-between">
+                        <div>
+                            <label class="block text-purple-300 text-sm font-semibold mb-2 uppercase tracking-wider">Обложка</label>
+                            <div class="p-4 border-2 border-dashed border-purple-800/50 rounded-lg bg-gray-900/30 hover:border-purple-500 transition group">
+                                <input type="url" id="game-img-url" placeholder="URL картинки (https://...)" class="w-full bg-transparent border-b border-purple-800 text-white focus:outline-none focus:border-purple-400 mb-4 pb-2 text-sm">
+                                <div class="text-center text-gray-500 text-xs my-2">- ИЛИ -</div>
+                                <label class="cursor-pointer flex flex-col items-center justify-center gap-2 text-gray-400 hover:text-purple-300 transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <span class="text-sm">Выберите файл изображения</span>
+                                    <input type="file" id="game-img-file" accept="image/*" class="hidden">
+                                </label>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-purple-300 text-sm font-semibold mb-2 uppercase tracking-wider">Файл игры</label>
+                            <div class="relative">
+                                <input type="file" id="game-file" class="hidden" required>
+                                <label for="game-file" class="block w-full text-center py-3 px-4 rounded-lg bg-purple-900/30 border border-purple-700 text-purple-300 hover:bg-purple-900/50 cursor-pointer transition">
+                                    <span id="file-label">Выбрать .zip/.exe файл</span>
+                                </label>
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full mt-auto bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-4 rounded-lg neon-button shadow-lg">
+                            Опубликовать игру
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Games Grid -->
+        <div id="games-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 hidden pb-10">
+            <!-- Games will be injected here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden text-center mt-20 p-10 glass-panel rounded-xl max-w-2xl mx-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto text-purple-800 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+            </svg>
+            <h3 class="text-2xl font-bold text-gray-300 mb-2">Библиотека пуста</h3>
+            <p class="text-gray-500">Игр пока нет. Загляните позже или попросите админа добавить новинки!</p>
+        </div>
+
     </main>
 
     <footer class="bg-gray-900/80 border-t border-purple-900/30 p-6 mt-auto">
