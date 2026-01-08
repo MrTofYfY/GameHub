@@ -178,12 +178,12 @@
                 <!-- Bet Amount -->
                 <div class="mb-6">
                     <label class="text-gray-400 text-sm mb-2 block">Ставка</label>
+                    <input type="text" inputmode="decimal" id="betAmount" value="10" 
+                        oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')"
+                        class="w-full bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 font-orbitron text-lg focus:border-green-500 focus:outline-none mb-2">
                     <div class="flex gap-2">
-                        <input type="text" inputmode="decimal" id="betAmount" value="10" 
-                            oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')"
-                            class="flex-1 bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 font-orbitron text-lg focus:border-green-500 focus:outline-none">
-                        <button onclick="setBet(0.5)" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg text-sm">½</button>
-                        <button onclick="setBet(2)" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg text-sm">2×</button>
+                        <button onclick="setBet(0.5)" class="flex-1 bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg text-sm transition-all">½</button>
+                        <button onclick="setBet(2)" class="flex-1 bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg text-sm transition-all">2×</button>
                     </div>
                 </div>
 
@@ -262,7 +262,7 @@
 
         <!-- Footer -->
         <footer class="text-center mt-8 text-gray-500 text-sm">
-            <p class="mt-1">MineDep Casino © 2024 | 18+</p>
+            <p class="mt-1">MineDep Casino © 2023-2026 | 18+</p>
         </footer>
     </div>
 
