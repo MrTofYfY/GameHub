@@ -3,917 +3,843 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NeonGameHub</title>
+    <title>MineDep Casino</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        :root {
-            --neon-purple: #a855f7;
-            --neon-blue: #3b82f6;
-            --dark-bg: #030014;
+        * {
+            font-family: 'Roboto', sans-serif;
+        }
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
         }
         body {
-            background-color: var(--dark-bg);
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(76, 29, 149, 0.4) 0%, transparent 50%),
-                radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.2) 0%, transparent 50%);
-            color: #e0e0e0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
             min-height: 100vh;
-            overflow-x: hidden;
         }
-        
-        /* Dynamic Background Grid */
-        .bg-grid {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-image: linear-gradient(rgba(168, 85, 247, 0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(168, 85, 247, 0.1) 1px, transparent 1px);
-            background-size: 50px 50px;
-            pointer-events: none;
-            z-index: -1;
-            mask-image: radial-gradient(circle at 50% 50%, black 40%, transparent 80%);
-        }
-
-        @keyframes neon-pulse {
-            0%, 100% { text-shadow: 0 0 5px var(--neon-purple), 0 0 10px var(--neon-purple); }
-            50% { text-shadow: 0 0 2px var(--neon-purple), 0 0 5px var(--neon-purple), 0 0 15px var(--neon-purple); }
-        }
-        .neon-text {
-            animation: neon-pulse 3s infinite alternate;
-        }
-        
-        .glass-panel {
-            background: rgba(17, 24, 39, 0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(168, 85, 247, 0.3);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-        }
-
         .neon-border {
-            border: 1px solid var(--neon-purple);
-            box-shadow: 0 0 5px var(--neon-purple), inset 0 0 5px rgba(168, 85, 247, 0.2);
+            box-shadow: 0 0 10px #00ff88, 0 0 20px #00ff8855, inset 0 0 10px #00ff8822;
         }
-        
-        .neon-button {
+        .neon-red {
+            box-shadow: 0 0 10px #ff4444, 0 0 20px #ff444455;
+        }
+        .tile {
             transition: all 0.3s ease;
+            background: linear-gradient(145deg, #2a2a4a, #1a1a3a);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+        .tile:hover:not(.revealed) {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0,255,136,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+        }
+        .tile.revealed {
+            transform: rotateY(180deg);
+        }
+        .tile-inner {
+            transition: transform 0.5s;
+            transform-style: preserve-3d;
+        }
+        .tile.revealed .tile-inner {
+            transform: rotateY(180deg);
+        }
+        .tile-front, .tile-back {
+            backface-visibility: hidden;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+        .tile-back {
+            transform: rotateY(180deg);
+        }
+        .gem {
+            background: linear-gradient(145deg, #00ff88, #00cc6a);
+            box-shadow: 0 0 20px #00ff88aa;
+        }
+        .mine {
+            background: linear-gradient(145deg, #ff4444, #cc2222);
+            box-shadow: 0 0 20px #ff4444aa;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        @keyframes coinDrop {
+            0% { transform: translateY(-20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        .coin-drop {
+            animation: coinDrop 0.5s ease-out;
+        }
+        .glass {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .multiplier-bar {
+            background: linear-gradient(90deg, #00ff88 0%, #ffff00 50%, #ff4444 100%);
+        }
+        @keyframes explode {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.8; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        .explode {
+            animation: explode 0.5s ease-out forwards;
+        }
+        .btn-glow {
             position: relative;
             overflow: hidden;
         }
-        .neon-button::before {
+        .btn-glow::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: 0.5s;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.5s;
         }
-        .neon-button:hover::before {
+        .btn-glow:hover::before {
             left: 100%;
         }
-        .neon-button:hover {
-            box-shadow: 0 0 15px var(--neon-purple), 0 0 30px var(--neon-purple);
-            transform: translateY(-2px);
-            text-shadow: 0 0 5px white;
-        }
-
-        /* Card Hover Effect */
-        .game-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .game-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 10px 30px -10px rgba(168, 85, 247, 0.5);
-            border-color: var(--neon-purple);
-        }
-
-        /* Scrollbar customization */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0f0518; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #581c87; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #7e22ce; 
-        }
-    </style>
-</head>
-<body class="min-h-screen flex flex-col">
-
-    <div class="bg-grid"></div>
-
-    <!-- Navigation -->
-    <nav class="glass-panel sticky top-0 z-50 border-b-0 border-b-purple-500/30">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full bg-purple-600 shadow-[0_0_10px_#a855f7] flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                </div>
-                <div class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 neon-text tracking-wider">NeonGameHub</div>
-            </div>
-            <div id="nav-buttons" class="flex items-center space-x-4">
-                <!-- Dynamic Content -->
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="container mx-auto p-4 flex-grow relative pt-8">
-        
-        <!-- Notifications -->
-        <div id="notification-area" class="fixed top-24 right-5 z-50 space-y-2 pointer-events-none"></div>
-
-        <!-- Auth Section -->
-        <div id="auth-section" class="max-w-md mx-auto mt-12 p-8 glass-panel rounded-2xl hidden animate-fade-in">
-            <h2 id="auth-title" class="text-3xl font-bold text-center text-purple-400 mb-8 neon-text">Вход в систему</h2>
-            <form id="auth-form" class="space-y-6">
-                <div class="relative group">
-                    <input type="text" id="username" class="w-full bg-gray-900/50 border border-purple-900/50 rounded-lg p-3 pl-4 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition peer" placeholder=" " required>
-                    <label class="absolute left-4 top-3 text-gray-500 transition-all peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-purple-400 peer-focus:bg-gray-900 peer-focus:px-1 pointer-events-none peer-not-placeholder-shown:-top-2.5 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:bg-gray-900 peer-not-placeholder-shown:px-1">Имя пользователя</label>
-                </div>
-                <div class="relative group">
-                    <input type="password" id="password" class="w-full bg-gray-900/50 border border-purple-900/50 rounded-lg p-3 pl-4 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition peer" placeholder=" " required>
-                    <label class="absolute left-4 top-3 text-gray-500 transition-all peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-purple-400 peer-focus:bg-gray-900 peer-focus:px-1 pointer-events-none peer-not-placeholder-shown:-top-2.5 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:bg-gray-900 peer-not-placeholder-shown:px-1">Пароль</label>
-                </div>
-                <button type="submit" class="w-full bg-gradient-to-r from-purple-700 to-purple-900 hover:from-purple-600 hover:to-purple-800 text-white font-bold py-3 px-4 rounded-lg neon-button uppercase tracking-wide">
-                    <span id="auth-btn-text">Войти</span>
-                </button>
-            </form>
-            <p class="text-center mt-6 text-gray-400 text-sm">
-                <span id="auth-switch-text">Нет аккаунта?</span> 
-                <button id="auth-toggle" class="text-purple-400 hover:text-purple-300 ml-1 font-semibold underline decoration-dotted underline-offset-4">Зарегистрироваться</button>
-            </p>
-        </div>
-
-        <!-- Admin Dashboard (Add Game) - Hidden by default, toggled via button -->
-        <div id="admin-panel" class="hidden mb-12 transform transition-all duration-300 origin-top">
-            <div class="glass-panel rounded-xl p-8 border border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.15)]">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-                        <span class="text-purple-400">⚡</span> Добавить новую игру
-                    </h2>
-                    <button onclick="toggleAdminPanel()" class="text-gray-400 hover:text-white">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-                
-                <form id="add-game-form" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="space-y-6">
-                        <div>
-                            <label class="block text-purple-300 text-sm font-semibold mb-2 uppercase tracking-wider">Название игры</label>
-                            <input type="text" id="game-title" class="w-full bg-gray-800/50 border border-purple-900 rounded-lg p-3 text-white focus:outline-none focus:border-purple-400 transition" placeholder="Cyberpunk 2077..." required>
-                        </div>
-                        <div>
-                            <label class="block text-purple-300 text-sm font-semibold mb-2 uppercase tracking-wider">Описание</label>
-                            <textarea id="game-desc" rows="5" class="w-full bg-gray-800/50 border border-purple-900 rounded-lg p-3 text-white focus:outline-none focus:border-purple-400 transition" placeholder="Краткое описание игры..." required></textarea>
-                        </div>
-                    </div>
-                    <div class="space-y-6 flex flex-col justify-between">
-                        <div>
-                            <label class="block text-purple-300 text-sm font-semibold mb-2 uppercase tracking-wider">Обложка</label>
-                            <div class="p-4 border-2 border-dashed border-purple-800/50 rounded-lg bg-gray-900/30 hover:border-purple-500 transition group">
-                                <input type="url" id="game-img-url" placeholder="URL картинки (https://...)" class="w-full bg-transparent border-b border-purple-800 text-white focus:outline-none focus:border-purple-400 mb-4 pb-2 text-sm">
-                                <div class="text-center text-gray-500 text-xs my-2">- ИЛИ -</div>
-                                <label class="cursor-pointer flex flex-col items-center justify-center gap-2 text-gray-400 hover:text-purple-300 transition">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    <span class="text-sm">Выберите файл изображения</span>
-                                    <input type="file" id="game-img-file" accept="image/*" class="hidden">
-                                </label>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-purple-300 text-sm font-semibold mb-2 uppercase tracking-wider">Файл игры</label>
-                            <div class="relative">
-                                <input type="file" id="game-file" class="hidden" required>
-                                <label for="game-file" class="block w-full text-center py-3 px-4 rounded-lg bg-purple-900/30 border border-purple-700 text-purple-300 hover:bg-purple-900/50 cursor-pointer transition">
-                                    <span id="file-label">Выбрать .zip/.exe файл</span>
-                                </label>
-                            </div>
-                        </div>
-                        <button type="submit" class="w-full mt-auto bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-4 rounded-lg neon-button shadow-lg">
-                            Опубликовать игру
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Games Grid -->
-        <div id="games-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 hidden pb-10">
-            <!-- Games will be injected here -->
-        </div>
-
-        <!-- Empty State -->
-        <div id="empty-state" class="hidden text-center mt-20 p-10 glass-panel rounded-xl max-w-2xl mx-auto">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto text-purple-800 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
-            </svg>
-            <h3 class="text-2xl font-bold text-gray-300 mb-2">Библиотека пуста</h3>
-            <p class="text-gray-500">Игр пока нет. Загляните позже или попросите админа добавить новинки!</p>
-        </div>
-
-        <!-- Edit Game Modal -->
-        <div id="edit-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
-            <div class="glass-panel p-8 rounded-2xl max-w-2xl w-full mx-4 relative transform scale-95 transition-transform duration-300" id="edit-modal-content">
-                <button onclick="closeEditModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-                
-                <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-                    <span class="text-blue-400">✏️</span> Редактирование игры
-                </h2>
-                
-                <form id="edit-game-form" class="space-y-4">
-                    <input type="hidden" id="edit-game-id">
-                    
-                    <div>
-                        <label class="block text-gray-400 text-xs uppercase font-bold mb-1">Название</label>
-                        <input type="text" id="edit-game-title" class="w-full bg-gray-800/50 border border-gray-600 rounded-lg p-2 text-white focus:border-blue-500 outline-none" required>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-gray-400 text-xs uppercase font-bold mb-1">Описание</label>
-                        <textarea id="edit-game-desc" rows="3" class="w-full bg-gray-800/50 border border-gray-600 rounded-lg p-2 text-white focus:border-blue-500 outline-none" required></textarea>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-gray-400 text-xs uppercase font-bold mb-1">Изображение</label>
-                            <div class="flex items-center gap-3">
-                                <img id="edit-game-preview" class="w-12 h-12 object-cover rounded border border-gray-600">
-                                <input type="text" id="edit-game-img-url" class="flex-grow bg-gray-800/50 border border-gray-600 rounded-lg p-2 text-white text-sm outline-none focus:border-blue-500" placeholder="URL картинки">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-gray-400 text-xs uppercase font-bold mb-1">Файл игры</label>
-                            <div class="flex items-center gap-2 h-12 px-3 border border-gray-600 rounded-lg bg-gray-800/30">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                </svg>
-                                <span id="edit-game-filename" class="text-sm text-gray-300 truncate">installer.zip</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex gap-3 mt-8 pt-4 border-t border-gray-700">
-                        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-lg transition shadow-lg hover:shadow-blue-500/30">
-                            Сохранить изменения
-                        </button>
-                        <button type="button" onclick="deleteGameFromEdit()" class="flex-none bg-red-600/20 hover:bg-red-600/80 text-red-400 hover:text-white border border-red-500/50 font-bold py-2 px-4 rounded-lg transition">
-                            Удалить игру
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-    </main>
-
-    <footer class="bg-gray-900/80 border-t border-purple-900/30 p-6 mt-auto">
-        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
-            <div>&copy; 2023 NeonGameHub. Создано для геймеров.</div>
-            <div class="flex space-x-4 mt-4 md:mt-0 items-center">
-                <a href="#" class="hover:text-purple-400 transition">О нас</a>
-                <a href="#" class="hover:text-purple-400 transition">Правила</a>
-                <button onclick="hardReset()" class="text-xs text-red-900 hover:text-red-500 border border-red-900/30 px-2 py-1 rounded ml-4 transition" title="Нажмите если сайт зависает">Сброс данных</button>
-            </div>
-        </div>
-    </footer>
-
-    <script>
-        // --- State Management ---
-        const DB_KEYS = {
-            USERS: 'neon_users_v2', // Updated version to force re-init if needed or just separate
-            CURRENT_USER: 'neon_curr_user_v2',
-            GAMES: 'neon_games_v2'
-        };
-
-        // Initialize DB with Error Handling
-        function initDB() {
-            try {
-                if (!localStorage.getItem(DB_KEYS.USERS)) {
-                    const adminUser = {
-                        id: 1,
-                        username: 'admin',
-                        password: '11448888', 
-                        isAdmin: true
-                    };
-                    localStorage.setItem(DB_KEYS.USERS, JSON.stringify([adminUser]));
-                }
-                if (!localStorage.getItem(DB_KEYS.GAMES)) {
-                    localStorage.setItem(DB_KEYS.GAMES, JSON.stringify([]));
-                }
-            } catch (e) {
-                console.error("Storage Error:", e);
-                alert("Ошибка хранилища! Данные сброшены во избежание зависания.");
-                localStorage.clear();
-                location.reload();
-            }
-        }
-
-        initDB();
-
-        // Global State with Safe Parsing
-        let currentUser = null;
-        try {
-            currentUser = JSON.parse(localStorage.getItem(DB_KEYS.CURRENT_USER));
-        } catch (e) {
-            console.error("User Parse Error", e);
-            localStorage.removeItem(DB_KEYS.CURRENT_USER);
-        }
-        let isLoginMode = true;
-
-        // Emergency Reset
-        window.hardReset = function() {
-            if(confirm("Это удалит ВСЕ данные (игры и пользователей) и исправит зависания. Продолжить?")) {
-                localStorage.clear();
-                location.reload();
-            }
-        }            mask-image: radial-gradient(circle at 50% 50%, black 40%, transparent 80%);
-        }
-
-        @keyframes neon-pulse {
-            0%, 100% { text-shadow: 0 0 5px var(--neon-purple), 0 0 10px var(--neon-purple); }
-            50% { text-shadow: 0 0 2px var(--neon-purple), 0 0 5px var(--neon-purple), 0 0 15px var(--neon-purple); }
-        }
-        .neon-text {
-            animation: neon-pulse 3s infinite alternate;
-        }
-        
-        .glass-panel {
-            background: rgba(17, 24, 39, 0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(168, 85, 247, 0.3);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .neon-border {
-            border: 1px solid var(--neon-purple);
-            box-shadow: 0 0 5px var(--neon-purple), inset 0 0 5px rgba(168, 85, 247, 0.2);
-        }
-        
-        .neon-button {
+        .popup-overlay {
+            opacity: 0;
+            visibility: hidden;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
         }
-        .neon-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: 0.5s;
+        .popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
         }
-        .neon-button:hover::before {
-            left: 100%;
+        .popup-content {
+            transform: scale(0.8);
+            transition: all 0.3s ease;
         }
-        .neon-button:hover {
-            box-shadow: 0 0 15px var(--neon-purple), 0 0 30px var(--neon-purple);
-            transform: translateY(-2px);
-            text-shadow: 0 0 5px white;
+        .popup-overlay.active .popup-content {
+            transform: scale(1);
         }
-
-        /* Card Hover Effect */
-        .game-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        @keyframes scanline {
+            0% { top: 0; }
+            100% { top: 100%; }
         }
-        .game-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 10px 30px -10px rgba(168, 85, 247, 0.5);
-            border-color: var(--neon-purple);
-        }
-
-        /* Scrollbar customization */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0f0518; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #581c87; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #7e22ce; 
+        .qr-scanline {
+            animation: scanline 2s linear infinite;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="text-white p-4 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="font-orbitron text-4xl md:text-6xl font-black bg-gradient-to-r from-green-400 via-yellow-400 to-green-400 bg-clip-text text-transparent">
+                <i class="fas fa-gem text-green-400"></i> MineDep Casino
+            </h1>
+        </header>
 
-    <div class="bg-grid"></div>
-
-    <!-- Navigation -->
-    <nav class="glass-panel sticky top-0 z-50 border-b-0 border-b-purple-500/30">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-full bg-purple-600 shadow-[0_0_10px_#a855f7] flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
+        <!-- Balance Section -->
+        <div class="glass rounded-2xl p-4 mb-6 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-2xl shadow-lg">
+                    <i class="fas fa-coins text-yellow-900"></i>
                 </div>
-                <div class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 neon-text tracking-wider">NeonGameHub</div>
+                <div>
+                    <p class="text-gray-400 text-sm">Баланс</p>
+                    <p class="font-orbitron text-2xl font-bold text-yellow-400" id="balance">1000.00</p>
+                </div>
             </div>
-            <div id="nav-buttons" class="flex items-center space-x-4">
-                <!-- Dynamic Content -->
-            </div>
+            <button onclick="openDepositPopup()" class="bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-500 hover:to-purple-700 px-6 py-2 rounded-xl font-bold transition-all btn-glow">
+                <i class="fas fa-plus-circle mr-2"></i>Пополнить
+            </button>
         </div>
-    </nav>
 
-    <!-- Main Content -->
-    <main class="container mx-auto p-4 flex-grow relative pt-8">
-        
-        <!-- Notifications -->
-        <div id="notification-area" class="fixed top-24 right-5 z-50 space-y-2 pointer-events-none"></div>
+        <div class="grid lg:grid-cols-3 gap-6">
+            <!-- Game Controls -->
+            <div class="glass rounded-2xl p-6 order-2 lg:order-1">
+                <h2 class="font-orbitron text-xl mb-6 text-center"><i class="fas fa-cog mr-2"></i>Настройки</h2>
+                
+                <!-- Bet Amount -->
+                <div class="mb-6">
+                    <label class="text-gray-400 text-sm mb-2 block">Ставка</label>
+                    <div class="flex gap-2">
+                        <input type="number" id="betAmount" value="10" min="1" max="1000" 
+                            class="flex-1 bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 font-orbitron text-lg focus:border-green-500 focus:outline-none">
+                        <button onclick="setBet(0.5)" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg text-sm">½</button>
+                        <button onclick="setBet(2)" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg text-sm">2×</button>
+                    </div>
+                </div>
 
-        <!-- Auth Section -->
-        <div id="auth-section" class="max-w-md mx-auto mt-12 p-8 glass-panel rounded-2xl hidden animate-fade-in">
-            <h2 id="auth-title" class="text-3xl font-bold text-center text-purple-400 mb-8 neon-text">Вход в систему</h2>
-            <form id="auth-form" class="space-y-6">
-                <div class="relative group">
-                    <input type="text" id="username" class="w-full bg-gray-900/50 border border-purple-900/50 rounded-lg p-3 pl-4 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition peer" placeholder=" " required>
-                    <label class="absolute left-4 top-3 text-gray-500 transition-all peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-purple-400 peer-focus:bg-gray-900 peer-focus:px-1 pointer-events-none peer-not-placeholder-shown:-top-2.5 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:bg-gray-900 peer-not-placeholder-shown:px-1">Имя пользователя</label>
+                <!-- Mines Count -->
+                <div class="mb-6">
+                    <label class="text-gray-400 text-sm mb-2 block">Количество мин: <span id="minesDisplay" class="text-red-400 font-bold">3</span></label>
+                    <input type="range" id="minesCount" min="1" max="24" value="3" 
+                        class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-red-500"
+                        oninput="updateMinesDisplay()">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>1</span>
+                        <span>24</span>
+                    </div>
                 </div>
-                <div class="relative group">
-                    <input type="password" id="password" class="w-full bg-gray-900/50 border border-purple-900/50 rounded-lg p-3 pl-4 text-white focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition peer" placeholder=" " required>
-                    <label class="absolute left-4 top-3 text-gray-500 transition-all peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-purple-400 peer-focus:bg-gray-900 peer-focus:px-1 pointer-events-none peer-not-placeholder-shown:-top-2.5 peer-not-placeholder-shown:text-xs peer-not-placeholder-shown:bg-gray-900 peer-not-placeholder-shown:px-1">Пароль</label>
+
+                <!-- Potential Win -->
+                <div class="bg-gray-800/50 rounded-xl p-4 mb-6">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-400">Множитель</span>
+                        <span class="font-orbitron text-green-400" id="currentMultiplier">1.00×</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Потенциальный выигрыш</span>
+                        <span class="font-orbitron text-yellow-400" id="potentialWin">0.00</span>
+                    </div>
                 </div>
-                <button type="submit" class="w-full bg-gradient-to-r from-purple-700 to-purple-900 hover:from-purple-600 hover:to-purple-800 text-white font-bold py-3 px-4 rounded-lg neon-button uppercase tracking-wide">
-                    <span id="auth-btn-text">Войти</span>
+
+                <!-- Action Buttons -->
+                <button id="playBtn" onclick="startGame()" 
+                    class="w-full bg-gradient-to-r from-green-500 to-green-700 hover:from-green-400 hover:to-green-600 py-4 rounded-xl font-orbitron font-bold text-lg mb-3 transition-all btn-glow pulse">
+                    <i class="fas fa-play mr-2"></i>ИГРАТЬ
                 </button>
-            </form>
-            <p class="text-center mt-6 text-gray-400 text-sm">
-                <span id="auth-switch-text">Нет аккаунта?</span> 
-                <button id="auth-toggle" class="text-purple-400 hover:text-purple-300 ml-1 font-semibold underline decoration-dotted underline-offset-4">Зарегистрироваться</button>
-            </p>
-        </div>
+                <button id="cashoutBtn" onclick="cashout()" disabled
+                    class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 py-4 rounded-xl font-orbitron font-bold text-lg transition-all btn-glow disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fas fa-hand-holding-dollar mr-2"></i>ЗАБРАТЬ
+                </button>
+            </div>
 
-        <!-- Admin Dashboard (Add Game) - Hidden by default, toggled via button -->
-        <div id="admin-panel" class="hidden mb-12 transform transition-all duration-300 origin-top">
-            <div class="glass-panel rounded-xl p-8 border border-purple-500/50 shadow-[0_0_20px_rgba(168,85,247,0.15)]">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-white flex items-center gap-2">
-                        <span class="text-purple-400">⚡</span> Добавить новую игру
-                    </h2>
-                    <button onclick="toggleAdminPanel()" class="text-gray-400 hover:text-white">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+            <!-- Game Grid -->
+            <div class="lg:col-span-2 order-1 lg:order-2">
+                <div class="glass rounded-2xl p-6">
+                    <div class="grid grid-cols-5 gap-3" id="gameGrid">
+                        <!-- Tiles will be generated here -->
+                    </div>
+                </div>
+
+                <!-- Game Info -->
+                <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm">
+                    <div class="flex items-center gap-2 bg-gray-800/50 px-4 py-2 rounded-lg">
+                        <i class="fas fa-gem text-2xl text-green-400"></i>
+                        <span>Гемов найдено: <span id="gemsFound" class="text-green-400 font-bold">0</span></span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-gray-800/50 px-4 py-2 rounded-lg">
+                        <i class="fas fa-bomb text-2xl text-red-400"></i>
+                        <span>Мин на поле: <span id="minesOnField" class="text-red-400 font-bold">3</span></span>
+                    </div>
+                </div>
+
+                <!-- Sound Toggle -->
+                <div class="mt-4 flex justify-center">
+                    <button onclick="toggleSound()" id="soundBtn" class="bg-gray-800/50 hover:bg-gray-700/50 px-4 py-2 rounded-lg text-sm transition-all">
+                        <i class="fas fa-volume-high mr-2" id="soundIcon"></i>
+                        <span id="soundText">Звук: ВКЛ</span>
                     </button>
                 </div>
-                
-                <form id="add-game-form" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="space-y-6">
-                        <div>
-                            <label class="block text-purple-300 text-sm font-semibold mb-2 uppercase tracking-wider">Название игры</label>
-                            <input type="text" id="game-title" class="w-full bg-gray-800/50 border border-purple-900 rounded-lg p-3 text-white focus:outline-none focus:border-purple-400 transition" placeholder="Cyberpunk 2077..." required>
-                        </div>
-                        <div>
-                            <label class="block text-purple-300 text-sm font-semibold mb-2 uppercase tracking-wider">Описание</label>
-                            <textarea id="game-desc" rows="5" class="w-full bg-gray-800/50 border border-purple-900 rounded-lg p-3 text-white focus:outline-none focus:border-purple-400 transition" placeholder="Краткое описание игры..." required></textarea>
-                        </div>
-                    </div>
-                    <div class="space-y-6 flex flex-col justify-between">
-                        <div>
-                            <label class="block text-purple-300 text-sm font-semibold mb-2 uppercase tracking-wider">Обложка</label>
-                            <div class="p-4 border-2 border-dashed border-purple-800/50 rounded-lg bg-gray-900/30 hover:border-purple-500 transition group">
-                                <input type="url" id="game-img-url" placeholder="URL картинки (https://...)" class="w-full bg-transparent border-b border-purple-800 text-white focus:outline-none focus:border-purple-400 mb-4 pb-2 text-sm">
-                                <div class="text-center text-gray-500 text-xs my-2">- ИЛИ -</div>
-                                <label class="cursor-pointer flex flex-col items-center justify-center gap-2 text-gray-400 hover:text-purple-300 transition">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    <span class="text-sm">Выберите файл изображения</span>
-                                    <input type="file" id="game-img-file" accept="image/*" class="hidden">
-                                </label>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-purple-300 text-sm font-semibold mb-2 uppercase tracking-wider">Файл игры</label>
-                            <div class="relative">
-                                <input type="file" id="game-file" class="hidden" required>
-                                <label for="game-file" class="block w-full text-center py-3 px-4 rounded-lg bg-purple-900/30 border border-purple-700 text-purple-300 hover:bg-purple-900/50 cursor-pointer transition">
-                                    <span id="file-label">Выбрать .zip/.exe файл</span>
-                                </label>
-                            </div>
-                        </div>
-                        <button type="submit" class="w-full mt-auto bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-4 rounded-lg neon-button shadow-lg">
-                            Опубликовать игру
-                        </button>
-                    </div>
-                </form>
             </div>
         </div>
 
-        <!-- Games Grid -->
-        <div id="games-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 hidden pb-10">
-            <!-- Games will be injected here -->
-        </div>
-
-        <!-- Empty State -->
-        <div id="empty-state" class="hidden text-center mt-20 p-10 glass-panel rounded-xl max-w-2xl mx-auto">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto text-purple-800 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
-            </svg>
-            <h3 class="text-2xl font-bold text-gray-300 mb-2">Библиотека пуста</h3>
-            <p class="text-gray-500">Игр пока нет. Загляните позже или попросите админа добавить новинки!</p>
-        </div>
-
-    </main>
-
-    <footer class="bg-gray-900/80 border-t border-purple-900/30 p-6 mt-auto">
-        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
-            <div>&copy; 2023 NeonGameHub. Создано для геймеров.</div>
-            <div class="flex space-x-4 mt-4 md:mt-0">
-                <a href="#" class="hover:text-purple-400 transition">О нас</a>
-                <a href="#" class="hover:text-purple-400 transition">Правила</a>
-                <a href="#" class="hover:text-purple-400 transition">Поддержка</a>
+        <!-- History -->
+        <div class="glass rounded-2xl p-6 mt-6">
+            <h2 class="font-orbitron text-xl mb-4"><i class="fas fa-chart-line mr-2"></i>История игр</h2>
+            <div id="history" class="flex gap-2 overflow-x-auto pb-2">
+                <div class="text-gray-500 text-sm">История пуста</div>
             </div>
         </div>
-    </footer>
+
+        <!-- Footer -->
+        <footer class="text-center mt-8 text-gray-500 text-sm">
+            <p class="mt-1">MineDep Casino © 2024 | 18+</p>
+        </footer>
+    </div>
+
+    <!-- Game Popup -->
+    <div id="gamePopup" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 popup-overlay">
+        <div class="glass rounded-3xl p-8 text-center max-w-md mx-4 popup-content">
+            <div class="text-6xl mb-4" id="popupEmoji"><i class="fas fa-coins text-yellow-400"></i></div>
+            <h2 class="font-orbitron text-3xl font-black mb-2" id="popupTitle">ВЫИГРЫШ!</h2>
+            <p class="text-4xl font-orbitron text-yellow-400 mb-6" id="popupAmount">+100.00</p>
+            <button onclick="closeGamePopup()" class="bg-gradient-to-r from-green-500 to-green-700 hover:from-green-400 hover:to-green-600 px-8 py-3 rounded-xl font-bold transition-all">
+                <i class="fas fa-check mr-2"></i>Продолжить
+            </button>
+        </div>
+    </div>
+
+    <!-- Deposit Popup -->
+    <div id="depositPopup" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 popup-overlay">
+        <div class="glass rounded-3xl p-8 text-center max-w-md mx-4 popup-content">
+            <div class="text-5xl mb-4"><i class="fas fa-wallet text-purple-400"></i></div>
+            <h2 class="font-orbitron text-2xl font-black mb-6 text-purple-400">Пополнение баланса</h2>
+            
+            <div class="mb-6">
+                <label class="text-gray-400 text-sm mb-2 block text-left">Сумма пополнения</label>
+                <input type="number" id="depositAmount" value="500" min="100" max="10000" 
+                    class="w-full bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 font-orbitron text-xl text-center focus:border-purple-500 focus:outline-none">
+            </div>
+            
+            <div class="flex gap-2 mb-6">
+                <button onclick="setDepositAmount(100)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-sm transition-all">100</button>
+                <button onclick="setDepositAmount(500)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-sm transition-all">500</button>
+                <button onclick="setDepositAmount(1000)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-sm transition-all">1000</button>
+                <button onclick="setDepositAmount(5000)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-sm transition-all">5000</button>
+            </div>
+            
+            <button onclick="processPayment()" class="w-full bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-400 hover:to-purple-600 py-4 rounded-xl font-orbitron font-bold text-lg mb-3 transition-all">
+                <i class="fas fa-credit-card mr-2"></i>Оплатить
+            </button>
+            <button onclick="closeDepositPopup()" class="w-full bg-gray-700 hover:bg-gray-600 py-3 rounded-xl font-bold transition-all">
+                <i class="fas fa-times mr-2"></i>Отмена
+            </button>
+        </div>
+    </div>
+
+    <!-- QR Code Popup -->
+    <div id="qrPopup" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 popup-overlay">
+        <div class="glass rounded-3xl p-8 text-center max-w-md mx-4 popup-content">
+            <div class="text-5xl mb-4"><i class="fas fa-qrcode text-white"></i></div>
+            <h2 class="font-orbitron text-xl font-black mb-2 text-white">Отсканируйте для оплаты</h2>
+            <p class="text-gray-400 text-sm mb-6">Сумма: <span id="qrAmount" class="text-yellow-400 font-bold">500</span> ₽</p>
+            
+            <!-- Fake QR Code -->
+            <div class="relative inline-block bg-white p-4 rounded-2xl mb-6">
+                <svg width="200" height="200" viewBox="0 0 200 200" class="block">
+                    <!-- QR Pattern -->
+                    <rect fill="#000" x="10" y="10" width="40" height="40"/>
+                    <rect fill="#fff" x="15" y="15" width="30" height="30"/>
+                    <rect fill="#000" x="20" y="20" width="20" height="20"/>
+                    
+                    <rect fill="#000" x="150" y="10" width="40" height="40"/>
+                    <rect fill="#fff" x="155" y="15" width="30" height="30"/>
+                    <rect fill="#000" x="160" y="20" width="20" height="20"/>
+                    
+                    <rect fill="#000" x="10" y="150" width="40" height="40"/>
+                    <rect fill="#fff" x="15" y="155" width="30" height="30"/>
+                    <rect fill="#000" x="20" y="160" width="20" height="20"/>
+                    
+                    <!-- Random pattern -->
+                    <rect fill="#000" x="60" y="10" width="10" height="10"/>
+                    <rect fill="#000" x="80" y="10" width="10" height="10"/>
+                    <rect fill="#000" x="100" y="10" width="10" height="10"/>
+                    <rect fill="#000" x="120" y="10" width="10" height="10"/>
+                    <rect fill="#000" x="60" y="30" width="10" height="10"/>
+                    <rect fill="#000" x="90" y="30" width="10" height="10"/>
+                    <rect fill="#000" x="110" y="30" width="10" height="10"/>
+                    <rect fill="#000" x="130" y="30" width="10" height="10"/>
+                    
+                    <rect fill="#000" x="10" y="60" width="10" height="10"/>
+                    <rect fill="#000" x="30" y="60" width="10" height="10"/>
+                    <rect fill="#000" x="10" y="80" width="10" height="10"/>
+                    <rect fill="#000" x="40" y="80" width="10" height="10"/>
+                    <rect fill="#000" x="10" y="100" width="10" height="10"/>
+                    <rect fill="#000" x="30" y="100" width="10" height="10"/>
+                    <rect fill="#000" x="10" y="120" width="10" height="10"/>
+                    <rect fill="#000" x="40" y="120" width="10" height="10"/>
+                    
+                    <rect fill="#000" x="60" y="60" width="10" height="10"/>
+                    <rect fill="#000" x="80" y="60" width="10" height="10"/>
+                    <rect fill="#000" x="100" y="60" width="10" height="10"/>
+                    <rect fill="#000" x="120" y="60" width="10" height="10"/>
+                    <rect fill="#000" x="70" y="70" width="10" height="10"/>
+                    <rect fill="#000" x="90" y="70" width="10" height="10"/>
+                    <rect fill="#000" x="110" y="70" width="10" height="10"/>
+                    <rect fill="#000" x="130" y="70" width="10" height="10"/>
+                    <rect fill="#000" x="60" y="80" width="10" height="10"/>
+                    <rect fill="#000" x="80" y="80" width="10" height="10"/>
+                    <rect fill="#000" x="100" y="80" width="10" height="10"/>
+                    <rect fill="#000" x="120" y="80" width="10" height="10"/>
+                    <rect fill="#000" x="70" y="90" width="10" height="10"/>
+                    <rect fill="#000" x="90" y="90" width="10" height="10"/>
+                    <rect fill="#000" x="110" y="90" width="10" height="10"/>
+                    <rect fill="#000" x="60" y="100" width="10" height="10"/>
+                    <rect fill="#000" x="80" y="100" width="10" height="10"/>
+                    <rect fill="#000" x="100" y="100" width="10" height="10"/>
+                    <rect fill="#000" x="120" y="100" width="10" height="10"/>
+                    <rect fill="#000" x="140" y="100" width="10" height="10"/>
+                    
+                    <rect fill="#000" x="150" y="60" width="10" height="10"/>
+                    <rect fill="#000" x="170" y="60" width="10" height="10"/>
+                    <rect fill="#000" x="180" y="70" width="10" height="10"/>
+                    <rect fill="#000" x="160" y="80" width="10" height="10"/>
+                    <rect fill="#000" x="150" y="90" width="10" height="10"/>
+                    <rect fill="#000" x="180" y="90" width="10" height="10"/>
+                    <rect fill="#000" x="170" y="100" width="10" height="10"/>
+                    <rect fill="#000" x="150" y="110" width="10" height="10"/>
+                    <rect fill="#000" x="180" y="110" width="10" height="10"/>
+                    <rect fill="#000" x="160" y="120" width="10" height="10"/>
+                    <rect fill="#000" x="180" y="120" width="10" height="10"/>
+                    
+                    <rect fill="#000" x="60" y="120" width="10" height="10"/>
+                    <rect fill="#000" x="80" y="120" width="10" height="10"/>
+                    <rect fill="#000" x="100" y="120" width="10" height="10"/>
+                    <rect fill="#000" x="120" y="120" width="10" height="10"/>
+                    <rect fill="#000" x="70" y="130" width="10" height="10"/>
+                    <rect fill="#000" x="90" y="130" width="10" height="10"/>
+                    <rect fill="#000" x="110" y="130" width="10" height="10"/>
+                    
+                    <rect fill="#000" x="60" y="150" width="10" height="10"/>
+                    <rect fill="#000" x="80" y="150" width="10" height="10"/>
+                    <rect fill="#000" x="100" y="150" width="10" height="10"/>
+                    <rect fill="#000" x="120" y="150" width="10" height="10"/>
+                    <rect fill="#000" x="140" y="150" width="10" height="10"/>
+                    <rect fill="#000" x="70" y="160" width="10" height="10"/>
+                    <rect fill="#000" x="90" y="160" width="10" height="10"/>
+                    <rect fill="#000" x="110" y="160" width="10" height="10"/>
+                    <rect fill="#000" x="130" y="160" width="10" height="10"/>
+                    <rect fill="#000" x="60" y="170" width="10" height="10"/>
+                    <rect fill="#000" x="80" y="170" width="10" height="10"/>
+                    <rect fill="#000" x="100" y="170" width="10" height="10"/>
+                    <rect fill="#000" x="120" y="170" width="10" height="10"/>
+                    <rect fill="#000" x="140" y="170" width="10" height="10"/>
+                    <rect fill="#000" x="70" y="180" width="10" height="10"/>
+                    <rect fill="#000" x="90" y="180" width="10" height="10"/>
+                    <rect fill="#000" x="110" y="180" width="10" height="10"/>
+                    <rect fill="#000" x="150" y="160" width="10" height="10"/>
+                    <rect fill="#000" x="170" y="160" width="10" height="10"/>
+                    <rect fill="#000" x="160" y="170" width="10" height="10"/>
+                    <rect fill="#000" x="180" y="170" width="10" height="10"/>
+                    <rect fill="#000" x="150" y="180" width="10" height="10"/>
+                    <rect fill="#000" x="170" y="180" width="10" height="10"/>
+                </svg>
+                <!-- Scanline animation -->
+                <div class="absolute left-0 right-0 h-1 bg-green-500/50 qr-scanline" style="box-shadow: 0 0 10px #00ff88;"></div>
+            </div>
+            
+            <div class="flex items-center justify-center gap-2 text-gray-400">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>Ожидание оплаты... <span id="qrTimer">5</span>с</span>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // --- State Management ---
-        const DB_KEYS = {
-            USERS: 'neon_users_v2', // Updated version to force re-init if needed or just separate
-            CURRENT_USER: 'neon_curr_user_v2',
-            GAMES: 'neon_games_v2'
-        };
+        // Audio Context for sounds
+        let audioContext = null;
+        let soundEnabled = true;
 
-        // Initialize DB
-        function initDB() {
-            if (!localStorage.getItem(DB_KEYS.USERS)) {
-                const adminUser = {
-                    id: 1,
-                    username: 'admin',
-                    password: '11448888', 
-                    isAdmin: true
-                };
-                localStorage.setItem(DB_KEYS.USERS, JSON.stringify([adminUser]));
-            }
-            if (!localStorage.getItem(DB_KEYS.GAMES)) {
-                localStorage.setItem(DB_KEYS.GAMES, JSON.stringify([]));
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
             }
         }
 
-        initDB();
-
-        // Global State
-        let currentUser = JSON.parse(localStorage.getItem(DB_KEYS.CURRENT_USER));
-        let isLoginMode = true;
-
-        // --- DOM Elements ---
-        const navButtons = document.getElementById('nav-buttons');
-        const authSection = document.getElementById('auth-section');
-        const authTitle = document.getElementById('auth-title');
-        const authForm = document.getElementById('auth-form');
-        const authBtnText = document.getElementById('auth-btn-text');
-        const authSwitchText = document.getElementById('auth-switch-text');
-        const authToggle = document.getElementById('auth-toggle');
-        const adminPanel = document.getElementById('admin-panel');
-        const gamesContainer = document.getElementById('games-container');
-        const emptyState = document.getElementById('empty-state');
-        const notificationArea = document.getElementById('notification-area');
-        const gameFileInput = document.getElementById('game-file');
-        const fileLabel = document.getElementById('file-label');
-
-        // File input listener for better UX
-        gameFileInput.addEventListener('change', function() {
-            if(this.files && this.files.length > 0) {
-                fileLabel.textContent = this.files[0].name;
-                fileLabel.classList.add('text-green-400', 'border-green-500');
+        function playSound(type) {
+            if (!soundEnabled) return;
+            initAudio();
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            switch(type) {
+                case 'click':
+                    oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                    break;
+                case 'gem':
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.15);
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                    break;
+                case 'mine':
+                    oscillator.type = 'sawtooth';
+                    oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.5);
+                    gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                    break;
+                case 'win':
+                    [0, 0.1, 0.2, 0.3].forEach((delay, i) => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime([523, 659, 784, 1047][i], audioContext.currentTime + delay);
+                        gain.gain.setValueAtTime(0.2, audioContext.currentTime + delay);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + delay + 0.2);
+                        osc.start(audioContext.currentTime + delay);
+                        osc.stop(audioContext.currentTime + delay + 0.2);
+                    });
+                    break;
+                case 'start':
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.15);
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.15);
+                    break;
             }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundIcon').className = soundEnabled ? 'fas fa-volume-high mr-2' : 'fas fa-volume-xmark mr-2';
+            document.getElementById('soundText').textContent = soundEnabled ? 'Звук: ВКЛ' : 'Звук: ВЫКЛ';
+            if (soundEnabled) playSound('click');
+        }
+
+        // Game State
+        let balance = 1000;
+        let currentBet = 10;
+        let minesCount = 3;
+        let gameActive = false;
+        let gemsFound = 0;
+        let currentMultiplier = 1;
+        let grid = [];
+        let revealedTiles = [];
+        let history = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createGrid();
+            updateDisplay();
         });
 
-        // --- Helper Functions ---
-        function showNotification(message, type = 'success') {
-            const notif = document.createElement('div');
-            const bgClass = type === 'success' ? 'bg-green-900/90 border-green-500' : 'bg-red-900/90 border-red-500';
-            const textClass = 'text-white';
+        function createGrid() {
+            const gridEl = document.getElementById('gameGrid');
+            gridEl.innerHTML = '';
             
-            notif.className = `p-4 ${bgClass} ${textClass} border-l-4 rounded-r shadow-2xl flex items-center gap-3 transform transition-all duration-500 translate-x-10 opacity-0 pointer-events-auto min-w-[300px] backdrop-blur-sm`;
-            
-            const icon = type === 'success' 
-                ? '<svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>'
-                : '<svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>';
-
-            notif.innerHTML = `${icon}<span class="font-medium">${message}</span>`;
-            
-            notificationArea.appendChild(notif);
-            
-            // Animate in
-            requestAnimationFrame(() => {
-                notif.classList.remove('translate-x-10', 'opacity-0');
-            });
-
-            // Remove after 3s
-            setTimeout(() => {
-                notif.classList.add('translate-x-10', 'opacity-0');
-                setTimeout(() => notif.remove(), 500);
-            }, 3000);
-        }
-
-        function readFileAsDataURL(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // --- Authentication Logic ---
-        function renderNav() {
-            navButtons.innerHTML = '';
-            if (currentUser) {
-                const container = document.createElement('div');
-                container.className = 'flex items-center gap-4';
-
-                // Add Game Button for Admins
-                if (currentUser.isAdmin) {
-                    const addGameBtn = document.createElement('button');
-                    addGameBtn.className = 'bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white border border-purple-500/50 py-2 px-4 rounded-full transition flex items-center gap-2 text-sm';
-                    addGameBtn.innerHTML = `
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Добавить игру
-                    `;
-                    addGameBtn.onclick = toggleAdminPanel;
-                    container.appendChild(addGameBtn);
-                }
-
-                const userProfile = document.createElement('div');
-                userProfile.className = 'flex items-center gap-2 pl-4 border-l border-gray-700';
-                userProfile.innerHTML = `
-                    <div class="text-right hidden sm:block">
-                        <div class="text-sm font-bold text-white leading-none">${currentUser.username}</div>
-                        <div class="text-xs text-purple-400 leading-none mt-1">${currentUser.isAdmin ? 'Administrator' : 'Gamer'}</div>
-                    </div>
-                    <div class="w-8 h-8 rounded bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center font-bold text-white">
-                        ${currentUser.username.charAt(0).toUpperCase()}
+            for (let i = 0; i < 25; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'tile aspect-square rounded-xl cursor-pointer relative';
+                tile.innerHTML = `
+                    <div class="tile-inner w-full h-full">
+                        <div class="tile-front bg-gradient-to-br from-indigo-600/30 to-purple-600/30 flex items-center justify-center text-3xl">
+                            <i class="fas fa-question text-gray-500"></i>
+                        </div>
+                        <div class="tile-back" id="tile-back-${i}"></div>
                     </div>
                 `;
+                tile.onclick = () => revealTile(i);
+                gridEl.appendChild(tile);
+            }
+        }
+
+        function startGame() {
+            const betInput = document.getElementById('betAmount');
+            currentBet = parseFloat(betInput.value);
+            minesCount = parseInt(document.getElementById('minesCount').value);
+
+            if (currentBet > balance) {
+                showGamePopup('error', 'Недостаточно средств!', '');
+                return;
+            }
+
+            if (currentBet < 1) {
+                showGamePopup('error', 'Минимальная ставка: 1', '');
+                return;
+            }
+
+            playSound('start');
+
+            // Deduct bet
+            balance -= currentBet;
+            updateBalance();
+
+            // Reset game state
+            gameActive = true;
+            gemsFound = 0;
+            currentMultiplier = 1;
+            revealedTiles = [];
+
+            // Generate mines
+            grid = Array(25).fill('gem');
+            let minesPlaced = 0;
+            while (minesPlaced < minesCount) {
+                const pos = Math.floor(Math.random() * 25);
+                if (grid[pos] !== 'mine') {
+                    grid[pos] = 'mine';
+                    minesPlaced++;
+                }
+            }
+
+            // Reset tiles
+            createGrid();
+            updateDisplay();
+
+            // Update buttons
+            document.getElementById('playBtn').disabled = true;
+            document.getElementById('playBtn').classList.remove('pulse');
+            document.getElementById('cashoutBtn').disabled = true;
+            document.getElementById('minesOnField').textContent = minesCount;
+        }
+
+        function revealTile(index) {
+            if (!gameActive || revealedTiles.includes(index)) return;
+
+            const tiles = document.querySelectorAll('.tile');
+            const tile = tiles[index];
+            const tileBack = document.getElementById(`tile-back-${index}`);
+            
+            revealedTiles.push(index);
+
+            if (grid[index] === 'mine') {
+                // Hit a mine!
+                playSound('mine');
+                tileBack.className = 'tile-back mine flex items-center justify-center text-4xl';
+                tileBack.innerHTML = '<i class="fas fa-bomb"></i>';
+                tile.classList.add('revealed');
                 
-                const logoutBtn = document.createElement('button');
-                logoutBtn.className = 'text-gray-400 hover:text-white ml-2';
-                logoutBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>`;
-                logoutBtn.onclick = logout;
-
-                container.appendChild(userProfile);
-                container.appendChild(logoutBtn);
-                navButtons.appendChild(container);
+                setTimeout(() => {
+                    tile.classList.add('shake');
+                    gameOver(false);
+                }, 300);
             } else {
-                // Not logged in
-            }
-        }
-
-        function toggleAuthMode() {
-            isLoginMode = !isLoginMode;
-            authTitle.textContent = isLoginMode ? 'Вход в систему' : 'Регистрация';
-            authBtnText.textContent = isLoginMode ? 'Войти' : 'Создать аккаунт';
-            authSwitchText.textContent = isLoginMode ? 'Нет аккаунта?' : 'Уже есть аккаунт?';
-            authToggle.textContent = isLoginMode ? 'Зарегистрироваться' : 'Войти';
-            
-            // Clear inputs
-            authForm.reset();
-        }
-
-        authToggle.addEventListener('click', (e) => {
-            e.preventDefault();
-            toggleAuthMode();
-        });
-
-        authForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const users = JSON.parse(localStorage.getItem(DB_KEYS.USERS));
-
-            if (isLoginMode) {
-                const user = users.find(u => u.username === username && u.password === password);
-                if (user) {
-                    login(user);
-                } else {
-                    showNotification('Неверное имя пользователя или пароль', 'error');
-                }
-            } else {
-                if (users.find(u => u.username === username)) {
-                    showNotification('Пользователь уже существует', 'error');
-                    return;
-                }
-                const newUser = {
-                    id: Date.now(),
-                    username,
-                    password,
-                    isAdmin: false
-                };
-                users.push(newUser);
-                localStorage.setItem(DB_KEYS.USERS, JSON.stringify(users));
-                showNotification('Регистрация успешна! Выполняется вход...');
-                login(newUser);
-            }
-        });
-
-        function login(user) {
-            currentUser = user;
-            localStorage.setItem(DB_KEYS.CURRENT_USER, JSON.stringify(user));
-            showNotification(`Добро пожаловать, ${user.username}!`);
-            renderApp();
-        }
-
-        function logout() {
-            currentUser = null;
-            localStorage.removeItem(DB_KEYS.CURRENT_USER);
-            showNotification('Вы вышли из системы');
-            renderApp();
-        }
-
-        // --- Game Logic ---
-        function toggleAdminPanel() {
-            adminPanel.classList.toggle('hidden');
-        }
-
-        document.getElementById('add-game-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!currentUser || !currentUser.isAdmin) return;
-
-            const title = document.getElementById('game-title').value;
-            const desc = document.getElementById('game-desc').value;
-            const imgUrlInput = document.getElementById('game-img-url').value;
-            const imgFileInput = document.getElementById('game-img-file').files[0];
-            const gameFile = document.getElementById('game-file').files[0];
-
-            let finalImgUrl = 'https://placehold.co/600x400/1e0a2e/a855f7?text=No+Image';
-            
-            if (imgUrlInput) {
-                finalImgUrl = imgUrlInput;
-            } else if (imgFileInput) {
-                try {
-                    finalImgUrl = await readFileAsDataURL(imgFileInput);
-                } catch (err) {
-                    console.error("Error reading image", err);
+                // Found a gem!
+                playSound('gem');
+                tileBack.className = 'tile-back gem flex items-center justify-center text-4xl';
+                tileBack.innerHTML = '<i class="fas fa-gem"></i>';
+                tile.classList.add('revealed');
+                
+                gemsFound++;
+                calculateMultiplier();
+                document.getElementById('cashoutBtn').disabled = false;
+                
+                // Check if all gems found
+                if (gemsFound === 25 - minesCount) {
+                    setTimeout(() => cashout(), 500);
                 }
             }
 
-            const gameData = {
-                id: Date.now(),
-                title,
-                description: desc,
-                imageUrl: finalImgUrl,
-                fileName: gameFile ? gameFile.name : 'installer.zip',
-                fileSize: gameFile ? (gameFile.size / 1024 / 1024).toFixed(1) + ' MB' : '124 MB',
-                uploadDate: new Date().toLocaleDateString()
-            };
+            updateDisplay();
+        }
 
-            const games = JSON.parse(localStorage.getItem(DB_KEYS.GAMES));
-            games.push(gameData);
-            localStorage.setItem(DB_KEYS.GAMES, JSON.stringify(games));
+        function calculateMultiplier() {
+            const safeSpots = 25 - minesCount;
+            let multiplier = 1;
+            for (let i = 0; i < gemsFound; i++) {
+                multiplier *= (25 - i) / (25 - minesCount - i);
+            }
+            currentMultiplier = multiplier * 0.97;
+            currentMultiplier = Math.max(1, currentMultiplier);
+        }
 
-            showNotification('Игра успешно добавлена в библиотеку!');
-            e.target.reset();
-            fileLabel.textContent = "Выбрать .zip/.exe файл";
-            fileLabel.classList.remove('text-green-400', 'border-green-500');
+        function cashout() {
+            if (!gameActive || gemsFound === 0) return;
+
+            playSound('win');
+
+            const winAmount = currentBet * currentMultiplier;
+            balance += winAmount;
+            updateBalance();
+
+            addToHistory(true, winAmount);
+            revealAllTiles();
+
+            showGamePopup('win', 'ВЫИГРЫШ!', `+${winAmount.toFixed(2)}`);
             
-            toggleAdminPanel(); // Hide panel after adding
-            renderGames();
-        });
+            gameActive = false;
+            resetButtons();
+        }
 
-        function renderGames() {
-            const games = JSON.parse(localStorage.getItem(DB_KEYS.GAMES));
-            gamesContainer.innerHTML = '';
+        function gameOver(won) {
+            gameActive = false;
+            revealAllTiles();
             
-            if (games.length === 0) {
-                gamesContainer.classList.add('hidden');
-                emptyState.classList.remove('hidden');
-            } else {
-                gamesContainer.classList.remove('hidden');
-                emptyState.classList.add('hidden');
+            if (!won) {
+                addToHistory(false, currentBet);
+                showGamePopup('lose', 'БАБАХ!', `-${currentBet.toFixed(2)}`);
+            }
+            
+            resetButtons();
+        }
 
-                // Reverse to show newest first
-                [...games].reverse().forEach(game => {
-                    const card = document.createElement('div');
-                    card.className = 'glass-panel rounded-xl overflow-hidden game-card flex flex-col h-full';
-                    
-                    const imgContainer = document.createElement('div');
-                    imgContainer.className = 'relative h-48 overflow-hidden group';
-                    
-                    const img = document.createElement('img');
-                    img.src = game.imageUrl;
-                    img.alt = game.title;
-                    img.className = 'w-full h-full object-cover transition duration-500 group-hover:scale-110';
-                    
-                    const overlay = document.createElement('div');
-                    overlay.className = 'absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-80';
-
-                    imgContainer.appendChild(img);
-                    imgContainer.appendChild(overlay);
-
-                    // Admin Delete Button
-                    if (currentUser && currentUser.isAdmin) {
-                        const deleteBtn = document.createElement('button');
-                        deleteBtn.className = 'absolute top-2 right-2 bg-red-500/80 hover:bg-red-600 text-white p-2 rounded-lg backdrop-blur-sm transition opacity-0 group-hover:opacity-100';
-                        deleteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-                        deleteBtn.onclick = (e) => { e.stopPropagation(); deleteGame(game.id); };
-                        imgContainer.appendChild(deleteBtn);
+        function revealAllTiles() {
+            const tiles = document.querySelectorAll('.tile');
+            grid.forEach((type, index) => {
+                if (!revealedTiles.includes(index)) {
+                    const tileBack = document.getElementById(`tile-back-${index}`);
+                    if (type === 'mine') {
+                        tileBack.className = 'tile-back mine flex items-center justify-center text-4xl opacity-50';
+                        tileBack.innerHTML = '<i class="fas fa-bomb"></i>';
+                    } else {
+                        tileBack.className = 'tile-back gem flex items-center justify-center text-4xl opacity-50';
+                        tileBack.innerHTML = '<i class="fas fa-gem"></i>';
                     }
-                    
-                    const body = document.createElement('div');
-                    body.className = 'p-5 flex flex-col flex-grow';
-                    
-                    body.innerHTML = `
-                        <div class="flex justify-between items-start mb-2">
-                            <h3 class="text-xl font-bold text-white truncate" title="${game.title}">${game.title}</h3>
-                        </div>
-                        <p class="text-gray-400 text-sm mb-4 line-clamp-3 flex-grow leading-relaxed">${game.description}</p>
-                        <div class="mt-auto pt-4 border-t border-gray-700/50 flex justify-between items-center">
-                            <div class="flex flex-col">
-                                <span class="text-xs text-purple-400 font-mono">${game.fileSize}</span>
-                                <span class="text-[10px] text-gray-500">${game.uploadDate}</span>
-                            </div>
-                            <button onclick="downloadGame('${game.title}', '${game.fileName}')" class="bg-purple-600 hover:bg-purple-500 text-white py-2 px-4 rounded-lg text-sm font-semibold shadow-[0_0_10px_rgba(147,51,234,0.3)] hover:shadow-[0_0_20px_rgba(147,51,234,0.5)] transition flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                </svg>
-                                Скачать
-                            </button>
-                        </div>
-                    `;
-
-                    card.appendChild(imgContainer);
-                    card.appendChild(body);
-                    gamesContainer.appendChild(card);
-                });
-            }
+                    setTimeout(() => {
+                        tiles[index].classList.add('revealed');
+                    }, index * 30);
+                }
+            });
         }
 
-        window.deleteGame = function(id) {
-            if(!confirm('Вы уверены, что хотите удалить эту игру?')) return;
-            let games = JSON.parse(localStorage.getItem(DB_KEYS.GAMES));
-            games = games.filter(g => g.id !== id);
-            localStorage.setItem(DB_KEYS.GAMES, JSON.stringify(games));
-            renderGames();
-            showNotification('Игра удалена', 'success');
+        function resetButtons() {
+            document.getElementById('playBtn').disabled = false;
+            document.getElementById('playBtn').classList.add('pulse');
+            document.getElementById('cashoutBtn').disabled = true;
         }
 
-        window.downloadGame = function(title, fileName) {
-            showNotification(`Подготовка к скачиванию: ${title}...`);
+        function updateDisplay() {
+            document.getElementById('gemsFound').textContent = gemsFound;
+            document.getElementById('currentMultiplier').textContent = currentMultiplier.toFixed(2) + '×';
+            document.getElementById('potentialWin').textContent = (currentBet * currentMultiplier).toFixed(2);
+        }
+
+        function updateBalance() {
+            document.getElementById('balance').textContent = balance.toFixed(2);
+            document.getElementById('balance').classList.add('coin-drop');
             setTimeout(() => {
-                const element = document.createElement('a');
-                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(`FAKE GAME FILE CONTENT FOR: ${title}`));
-                element.setAttribute('download', fileName);
-                element.style.display = 'none';
-                document.body.appendChild(element);
-                element.click();
-                document.body.removeChild(element);
-                showNotification(`Скачивание началось!`, 'success');
-            }, 1500);
+                document.getElementById('balance').classList.remove('coin-drop');
+            }, 500);
         }
 
-        // --- Main App Renderer ---
-        function renderApp() {
-            renderNav();
+        function updateMinesDisplay() {
+            const mines = document.getElementById('minesCount').value;
+            document.getElementById('minesDisplay').textContent = mines;
+            document.getElementById('minesOnField').textContent = mines;
+        }
 
-            // Always hide admin panel initially when rendering app state
-            adminPanel.classList.add('hidden');
+        function setBet(multiplier) {
+            playSound('click');
+            const betInput = document.getElementById('betAmount');
+            let newBet = parseFloat(betInput.value) * multiplier;
+            newBet = Math.max(1, Math.min(balance, newBet));
+            betInput.value = Math.floor(newBet);
+        }
 
-            if (!currentUser) {
-                // Not logged in
-                authSection.classList.remove('hidden');
-                gamesContainer.classList.add('hidden');
-                emptyState.classList.add('hidden');
+        function addToHistory(won, amount) {
+            history.unshift({ won, amount });
+            if (history.length > 10) history.pop();
+            
+            const historyEl = document.getElementById('history');
+            historyEl.innerHTML = history.map(h => `
+                <div class="flex-shrink-0 px-4 py-2 rounded-lg ${h.won ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}">
+                    <i class="fas ${h.won ? 'fa-check-circle' : 'fa-times-circle'} mr-1"></i>
+                    ${h.won ? '+' : '-'}${h.amount.toFixed(2)}
+                </div>
+            `).join('');
+        }
+
+        // Game Popup Functions
+        function showGamePopup(type, title, amount) {
+            const popup = document.getElementById('gamePopup');
+            const emoji = document.getElementById('popupEmoji');
+            const titleEl = document.getElementById('popupTitle');
+            const amountEl = document.getElementById('popupAmount');
+
+            if (type === 'win') {
+                emoji.innerHTML = '<i class="fas fa-trophy text-yellow-400"></i>';
+                titleEl.className = 'font-orbitron text-3xl font-black mb-2 text-green-400';
+            } else if (type === 'lose') {
+                emoji.innerHTML = '<i class="fas fa-skull-crossbones text-red-400"></i>';
+                titleEl.className = 'font-orbitron text-3xl font-black mb-2 text-red-400';
             } else {
-                // Logged in
-                authSection.classList.add('hidden');
-                renderGames();
+                emoji.innerHTML = '<i class="fas fa-exclamation-triangle text-yellow-400"></i>';
+                titleEl.className = 'font-orbitron text-3xl font-black mb-2 text-yellow-400';
             }
+
+            titleEl.textContent = title;
+            amountEl.textContent = amount;
+            amountEl.className = `text-4xl font-orbitron mb-6 ${type === 'lose' ? 'text-red-400' : 'text-yellow-400'}`;
+            
+            popup.classList.add('active');
         }
 
-        // Initial Render
-        renderApp();
+        function closeGamePopup() {
+            playSound('click');
+            document.getElementById('gamePopup').classList.remove('active');
+        }
 
+        // Deposit Popup Functions
+        function openDepositPopup() {
+            playSound('click');
+            document.getElementById('depositPopup').classList.add('active');
+        }
+
+        function closeDepositPopup() {
+            playSound('click');
+            document.getElementById('depositPopup').classList.remove('active');
+        }
+
+        function setDepositAmount(amount) {
+            playSound('click');
+            document.getElementById('depositAmount').value = amount;
+        }
+
+        function processPayment() {
+            playSound('click');
+            const amount = parseFloat(document.getElementById('depositAmount').value);
+            document.getElementById('qrAmount').textContent = amount;
+            
+            closeDepositPopup();
+            
+            setTimeout(() => {
+                document.getElementById('qrPopup').classList.add('active');
+                
+                let timer = 5;
+                const timerEl = document.getElementById('qrTimer');
+                const interval = setInterval(() => {
+                    timer--;
+                    timerEl.textContent = timer;
+                    if (timer <= 0) {
+                        clearInterval(interval);
+                        document.getElementById('qrPopup').classList.remove('active');
+                        timerEl.textContent = '5';
+                        
+                        // Пополняем баланс
+                        balance += amount;
+                        updateBalance();
+                        playSound('win');
+                        
+                        // Показываем уведомление об успешном пополнении
+                        setTimeout(() => {
+                            showGamePopup('win', 'ПОПОЛНЕНО!', `+${amount.toFixed(2)}`);
+                        }, 300);
+                    }
+                }, 1000);
+            }, 300);
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !gameActive) {
+                e.preventDefault();
+                startGame();
+            }
+            if (e.code === 'Enter' && gameActive && gemsFound > 0) {
+                e.preventDefault();
+                cashout();
+            }
+            if (e.code === 'Escape') {
+                closeGamePopup();
+                closeDepositPopup();
+                document.getElementById('qrPopup').classList.remove('active');
+            }
+        });
+
+        // Close popups on overlay click
+        document.getElementById('gamePopup').addEventListener('click', (e) => {
+            if (e.target.id === 'gamePopup') closeGamePopup();
+        });
+        document.getElementById('depositPopup').addEventListener('click', (e) => {
+            if (e.target.id === 'depositPopup') closeDepositPopup();
+        });
     </script>
 </body>
 </html>
