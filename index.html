@@ -179,7 +179,8 @@
                 <div class="mb-6">
                     <label class="text-gray-400 text-sm mb-2 block">Ставка</label>
                     <div class="flex gap-2">
-                        <input type="number" id="betAmount" value="10" min="1" max="1000" 
+                        <input type="text" inputmode="decimal" id="betAmount" value="10" 
+                            oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')"
                             class="flex-1 bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 font-orbitron text-lg focus:border-green-500 focus:outline-none">
                         <button onclick="setBet(0.5)" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg text-sm">½</button>
                         <button onclick="setBet(2)" class="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg text-sm">2×</button>
@@ -285,7 +286,8 @@
             
             <div class="mb-6">
                 <label class="text-gray-400 text-sm mb-2 block text-left">Сумма пополнения</label>
-                <input type="number" id="depositAmount" value="500" min="100" max="10000" 
+                <input type="text" inputmode="decimal" id="depositAmount" value="500" 
+                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')"
                     class="w-full bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 font-orbitron text-xl text-center focus:border-purple-500 focus:outline-none">
             </div>
             
@@ -543,7 +545,7 @@
 
         function startGame() {
             const betInput = document.getElementById('betAmount');
-            currentBet = parseFloat(betInput.value);
+            currentBet = parseFloat(betInput.value) || 0;
             minesCount = parseInt(document.getElementById('minesCount').value);
 
             if (currentBet > balance) {
@@ -698,7 +700,8 @@
         function updateDisplay() {
             document.getElementById('gemsFound').textContent = gemsFound;
             document.getElementById('currentMultiplier').textContent = currentMultiplier.toFixed(2) + '×';
-            document.getElementById('potentialWin').textContent = (currentBet * currentMultiplier).toFixed(2);
+            const bet = parseFloat(document.getElementById('betAmount').value) || 0;
+            document.getElementById('potentialWin').textContent = (bet * currentMultiplier).toFixed(2);
         }
 
         function updateBalance() {
@@ -718,7 +721,8 @@
         function setBet(multiplier) {
             playSound('click');
             const betInput = document.getElementById('betAmount');
-            let newBet = parseFloat(betInput.value) * multiplier;
+            let currentVal = parseFloat(betInput.value) || 0;
+            let newBet = currentVal * multiplier;
             newBet = Math.max(1, Math.min(balance, newBet));
             betInput.value = Math.floor(newBet);
         }
@@ -784,7 +788,7 @@
 
         function processPayment() {
             playSound('click');
-            const amount = parseFloat(document.getElementById('depositAmount').value);
+            const amount = parseFloat(document.getElementById('depositAmount').value) || 0;
             document.getElementById('qrAmount').textContent = amount;
             
             closeDepositPopup();
