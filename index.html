@@ -298,6 +298,7 @@
                     class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 py-4 rounded-xl font-orbitron font-bold text-lg transition-all btn-glow disabled:opacity-50 disabled:cursor-not-allowed">
                     <i class="fas fa-hand-holding-dollar mr-2"></i>ЗАБРАТЬ
                 </button>
+                <p id="cashoutHint" class="text-center text-gray-500 text-xs mt-2">Откройте минимум 3 гема чтобы забрать</p>
             </div>
 
             <!-- Game Grid -->
@@ -912,7 +913,10 @@
                 
                 gemsFound++;
                 calculateMultiplier();
-                document.getElementById('cashoutBtn').disabled = false;
+                // Можно забрать только после 3 открытых гемов
+                if (gemsFound >= 3) {
+                    document.getElementById('cashoutBtn').disabled = false;
+                }
                 
                 // Check if all gems found
                 if (gemsFound === 25 - minesCount) {
@@ -995,6 +999,21 @@
             document.getElementById('currentMultiplier').textContent = currentMultiplier.toFixed(2) + '×';
             const bet = parseFloat(document.getElementById('betAmount').value) || 0;
             document.getElementById('potentialWin').textContent = (bet * currentMultiplier).toFixed(2);
+            
+            // Обновляем подсказку о минимуме гемов
+            const hint = document.getElementById('cashoutHint');
+            if (gameActive) {
+                if (gemsFound < 3) {
+                    hint.textContent = `Откройте ещё ${3 - gemsFound} гем(а) чтобы забрать`;
+                    hint.className = 'text-center text-yellow-500 text-xs mt-2';
+                } else {
+                    hint.textContent = '✓ Можно забирать!';
+                    hint.className = 'text-center text-green-400 text-xs mt-2';
+                }
+            } else {
+                hint.textContent = 'Откройте минимум 3 гема чтобы забрать';
+                hint.className = 'text-center text-gray-500 text-xs mt-2';
+            }
         }
 
         function updateBalance() {
