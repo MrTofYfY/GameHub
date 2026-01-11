@@ -894,6 +894,375 @@
             outline: none;
             border-color: #10b981;
         }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.1);
+            border-left-color: #10b981;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="text-white p-4 md:p-8">
+    <!-- Auth Screen -->
+    <div id="authScreen" class="min-h-screen flex items-center justify-center">
+        <div class="glass rounded-3xl p-8 max-w-md w-full mx-4">
+            <div class="text-center mb-8">
+                <h1 class="font-orbitron text-3xl md:text-4xl font-black bg-gradient-to-r from-green-400 via-yellow-400 to-green-400 bg-clip-text text-transparent mb-2">
+                    <i class="fas fa-gem text-green-400"></i> MineDep
+                </h1>
+                <p class="text-gray-400">Войдите или создайте аккаунт</p>
+            </div>
+
+            <div id="loginForm">
+                <div class="mb-4">
+                    <label class="text-gray-400 text-sm mb-2 block">Логин</label>
+                    <input type="text" id="loginUsername" placeholder="Введите логин" class="input-field font-orbitron">
+                </div>
+                <div class="mb-6">
+                    <label class="text-gray-400 text-sm mb-2 block">Пароль</label>
+                    <input type="password" id="loginPassword" placeholder="Введите пароль" class="input-field font-orbitron">
+                </div>
+                <div id="authError" class="text-red-400 text-sm mb-4 hidden text-center"></div>
+                <button id="loginBtn" class="w-full bg-gradient-to-r from-green-500 to-green-700 hover:from-green-400 hover:to-green-600 py-4 rounded-xl font-orbitron font-bold text-lg mb-3 transition-all btn-glow">
+                    <i class="fas fa-sign-in-alt mr-2"></i>ВОЙТИ
+                </button>
+                <button id="showRegisterBtn" class="w-full bg-gray-700 hover:bg-gray-600 py-3 rounded-xl font-bold transition-all">
+                    <i class="fas fa-user-plus mr-2"></i>Создать аккаунт
+                </button>
+            </div>
+
+            <div id="registerForm" class="hidden">
+                <div class="mb-4">
+                    <label class="text-gray-400 text-sm mb-2 block">Логин</label>
+                    <input type="text" id="regUsername" placeholder="Придумайте логин" class="input-field font-orbitron">
+                </div>
+                <div class="mb-4">
+                    <label class="text-gray-400 text-sm mb-2 block">Пароль</label>
+                    <input type="password" id="regPassword" placeholder="Придумайте пароль" class="input-field font-orbitron">
+                </div>
+                <div class="mb-6">
+                    <label class="text-gray-400 text-sm mb-2 block">Повторите пароль</label>
+                    <input type="password" id="regPasswordConfirm" placeholder="Повторите пароль" class="input-field font-orbitron">
+                </div>
+                <div id="regError" class="text-red-400 text-sm mb-4 hidden text-center"></div>
+                <button id="registerBtn" class="w-full bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-400 hover:to-purple-600 py-4 rounded-xl font-orbitron font-bold text-lg mb-3 transition-all btn-glow">
+                    <i class="fas fa-user-plus mr-2"></i>ЗАРЕГИСТРИРОВАТЬСЯ
+                </button>
+                <button id="showLoginBtn" class="w-full bg-gray-700 hover:bg-gray-600 py-3 rounded-xl font-bold transition-all">
+                    <i class="fas fa-arrow-left mr-2"></i>Назад к входу
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Game Screen -->
+    <div id="gameScreen" class="max-w-6xl mx-auto hidden">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="font-orbitron text-4xl md:text-6xl font-black bg-gradient-to-r from-green-400 via-yellow-400 to-green-400 bg-clip-text text-transparent">
+                <i class="fas fa-gem text-green-400"></i> MineDep Casino
+            </h1>
+        </header>
+
+        <!-- Balance Section -->
+        <div class="glass rounded-2xl p-4 mb-6 flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-2xl shadow-lg">
+                    <i class="fas fa-coins text-yellow-900"></i>
+                </div>
+                <div>
+                    <p class="text-gray-400 text-sm">Баланс</p>
+                    <p class="font-orbitron text-2xl font-bold text-yellow-400" id="balance">0.00</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="text-right">
+                    <p class="text-gray-400 text-sm">Игрок</p>
+                    <p class="font-orbitron text-lg font-bold text-green-400" id="playerName">Player</p>
+                </div>
+                <button onclick="logout()" class="bg-gray-700 hover:bg-gray-600 p-3 rounded-xl transition-all" title="Выйти">
+                    <i class="fas fa-sign-out-alt text-red-400"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 mb-4">
+            <button onclick="openWithdrawPopup()" class="bg-gradient-to-r from-green-600 to-green-800 hover:from-green-500 hover:to-green-700 px-6 py-2 rounded-xl font-bold transition-all btn-glow">
+                <i class="fas fa-money-bill-wave mr-2"></i>Вывод
+            </button>
+            <button onclick="openDepositPopup()" class="bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-500 hover:to-purple-700 px-6 py-2 rounded-xl font-bold transition-all btn-glow">
+                <i class="fas fa-plus-circle mr-2"></i>Пополнить
+            </button>
+        </div>
+
+        <div class="grid lg:grid-cols-3 gap-6">
+            <!-- Game Controls -->
+            <div class="glass rounded-2xl p-6 order-2 lg:order-1">
+                <h2 class="font-orbitron text-xl mb-6 text-center"><i class="fas fa-cog mr-2"></i>Настройки</h2>
+                
+                <!-- Bet Amount -->
+                <div class="mb-6">
+                    <label class="text-gray-400 text-sm mb-2 block">Ставка</label>
+                    <input type="text" inputmode="decimal" id="betAmount" value="10" 
+                        oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')"
+                        class="w-full bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 font-orbitron text-lg focus:border-green-500 focus:outline-none mb-2">
+                    <div class="flex gap-2">
+                        <button onclick="setBet(0.5)" class="flex-1 bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg text-sm transition-all">½</button>
+                        <button onclick="setBet(2)" class="flex-1 bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded-lg text-sm transition-all">2×</button>
+                    </div>
+                </div>
+
+                <!-- Mines Count -->
+                <div class="mb-6">
+                    <label class="text-gray-400 text-sm mb-2 block">Количество мин: <span id="minesDisplay" class="text-red-400 font-bold">4</span></label>
+                    <input type="range" id="minesCount" min="4" max="22" value="4" 
+                        class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-red-500"
+                        oninput="updateMinesDisplay()">
+                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>4</span>
+                        <span>22</span>
+                    </div>
+                </div>
+
+                <!-- Potential Win -->
+                <div class="bg-gray-800/50 rounded-xl p-4 mb-6">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-400">Множитель</span>
+                        <span class="font-orbitron text-green-400" id="currentMultiplier">1.00×</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Потенциальный выигрыш</span>
+                        <span class="font-orbitron text-yellow-400" id="potentialWin">0.00</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <button id="playBtn" onclick="startGame()" 
+                    class="w-full bg-gradient-to-r from-green-500 to-green-700 hover:from-green-400 hover:to-green-600 py-4 rounded-xl font-orbitron font-bold text-lg mb-3 transition-all btn-glow pulse">
+                    <i class="fas fa-play mr-2"></i>ИГРАТЬ
+                </button>
+                <button id="cashoutBtn" onclick="cashout()" disabled
+                    class="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 py-4 rounded-xl font-orbitron font-bold text-lg transition-all btn-glow disabled:opacity-50 disabled:cursor-not-allowed">
+                    <i class="fas fa-hand-holding-dollar mr-2"></i>ЗАБРАТЬ
+                </button>
+                <p id="cashoutHint" class="text-center text-gray-500 text-xs mt-2">Откройте минимум 3 гема чтобы забрать</p>
+            </div>
+
+            <!-- Game Grid -->
+            <div class="lg:col-span-2 order-1 lg:order-2">
+                <div class="glass rounded-2xl p-6">
+                    <div class="grid grid-cols-5 gap-3" id="gameGrid">
+                        <!-- Tiles will be generated here -->
+                    </div>
+                </div>
+
+                <!-- Game Info -->
+                <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm">
+                    <div class="flex items-center gap-2 bg-gray-800/50 px-4 py-2 rounded-lg">
+                        <i class="fas fa-gem text-2xl text-green-400"></i>
+                        <span>Гемов найдено: <span id="gemsFound" class="text-green-400 font-bold">0</span></span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-gray-800/50 px-4 py-2 rounded-lg">
+                        <i class="fas fa-bomb text-2xl text-red-400"></i>
+                        <span>Мин на поле: <span id="minesOnField" class="text-red-400 font-bold">4</span></span>
+                    </div>
+                </div>
+
+                <!-- Sound Toggle -->
+                <div class="mt-4 flex justify-center">
+                    <button onclick="toggleSound()" id="soundBtn" class="bg-gray-800/50 hover:bg-gray-700/50 px-4 py-2 rounded-lg text-sm transition-all">
+                        <i class="fas fa-volume-high mr-2" id="soundIcon"></i>
+                        <span id="soundText">Звук: ВКЛ</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div class="glass rounded-2xl p-6 mt-6">
+            <h2 class="font-orbitron text-xl mb-4"><i class="fas fa-chart-line mr-2"></i>История игр</h2>
+            <div id="history" class="flex gap-2 overflow-x-auto pb-2">
+                <div class="text-gray-500 text-sm">История пуста</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center mt-8 text-gray-500 text-sm">
+            <p class="mt-1">MineDep Casino © 2023-2026 | 18+</p>
+        </footer>
+    </div>
+
+    <!-- Game Popup -->
+    <div id="gamePopup" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 popup-overlay">
+        <div class="glass rounded-3xl p-8 text-center max-w-md mx-4 popup-content">
+            <div class="text-6xl mb-4" id="popupEmoji"><i class="fas fa-coins text-yellow-400"></i></div>
+            <h2 class="font-orbitron text-3xl font-black mb-2" id="popupTitle">ВЫИГРЫШ!</h2>
+            <p class="text-4xl font-orbitron text-yellow-400 mb-6" id="popupAmount">+100.00</p>
+            <button onclick="closeGamePopup()" class="bg-gradient-to-r from-green-500 to-green-700 hover:from-green-400 hover:to-green-600 px-8 py-3 rounded-xl font-bold transition-all">
+                <i class="fas fa-check mr-2"></i>Продолжить
+            </button>
+        </div>
+    </div>
+
+    <!-- Deposit Popup -->
+    <div id="depositPopup" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 popup-overlay">
+        <div class="glass rounded-3xl p-8 text-center max-w-md mx-4 popup-content">
+            <div class="text-5xl mb-4"><i class="fas fa-wallet text-purple-400"></i></div>
+            <h2 class="font-orbitron text-2xl font-black mb-6 text-purple-400">Пополнение баланса</h2>
+            
+            <div class="mb-6">
+                <label class="text-gray-400 text-sm mb-2 block text-left">Сумма пополнения</label>
+                <input type="text" inputmode="decimal" id="depositAmount" value="500" 
+                    oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')"
+                    class="w-full bg-gray-800/50 border border-gray-700 rounded-xl px-4 py-3 font-orbitron text-xl text-center focus:border-purple-500 focus:outline-none">
+            </div>
+            
+            <div class="flex gap-2 mb-6">
+                <button onclick="setDepositAmount(100)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-sm transition-all">100</button>
+                <button onclick="setDepositAmount(500)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-sm transition-all">500</button>
+                <button onclick="setDepositAmount(1000)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-sm transition-all">1000</button>
+                <button onclick="setDepositAmount(5000)" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg text-sm transition-all">5000</button>
+            </div>
+            
+            <button onclick="processPayment()" class="w-full bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-400 hover:to-purple-600 py-4 rounded-xl font-orbitron font-bold text-lg mb-3 transition-all">
+                <i class="fas fa-credit-card mr-2"></i>Оплатить
+            </button>
+            <button onclick="closeDepositPopup()" class="w-full bg-gray-700 hover:bg-gray-600 py-3 rounded-xl font-bold transition-all">
+                <i class="fas fa-times mr-2"></i>Отмена
+            </button>
+        </div>
+    </div>
+
+    <!-- Withdraw Popup -->
+    <div id="withdrawPopup" class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 popup-overlay">
+        <div class="glass rounded-3xl p-8 text-center max-w-md m            transform: rotateY(180deg);
+        }
+        .tile-inner {
+            transition: transform 0.5s;
+            transform-style: preserve-3d;
+        }
+        .tile.revealed .tile-inner {
+            transform: rotateY(180deg);
+        }
+        .tile-front, .tile-back {
+            backface-visibility: hidden;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+        .tile-back {
+            transform: rotateY(180deg);
+        }
+        .gem {
+            background: linear-gradient(145deg, #00ff88, #00cc6a);
+            box-shadow: 0 0 20px #00ff88aa;
+        }
+        .mine {
+            background: linear-gradient(145deg, #ff4444, #cc2222);
+            box-shadow: 0 0 20px #ff4444aa;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+        @keyframes coinDrop {
+            0% { transform: translateY(-20px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        .coin-drop {
+            animation: coinDrop 0.5s ease-out;
+        }
+        .glass {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .multiplier-bar {
+            background: linear-gradient(90deg, #00ff88 0%, #ffff00 50%, #ff4444 100%);
+        }
+        @keyframes explode {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.8; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+        .explode {
+            animation: explode 0.5s ease-out forwards;
+        }
+        .btn-glow {
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-glow::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.5s;
+        }
+        .btn-glow:hover::before {
+            left: 100%;
+        }
+        .popup-overlay {
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .popup-content {
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+        }
+        .popup-overlay.active .popup-content {
+            transform: scale(1);
+        }
+        @keyframes scanline {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        .qr-scanline {
+            animation: scanline 2s linear infinite;
+        }
+        .input-field {
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(75, 85, 99, 1);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            width: 100%;
+            color: white;
+            transition: all 0.3s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #10b981;
+        }
     </style>
 </head>
 <body class="text-white p-4 md:p-8">
